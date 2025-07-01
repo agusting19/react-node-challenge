@@ -35,9 +35,6 @@ const userSchema = new Schema<UserDocument>(
   }
 );
 
-// Index for better performance on email queries
-userSchema.index({ email: 1 });
-
 // Remove password from JSON output
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
