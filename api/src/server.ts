@@ -1,4 +1,4 @@
-import { config } from "@/infrastructure/config/environment";
+import { env } from "@/infrastructure/config/environment";
 import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
@@ -23,7 +23,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-const PORT = config.port || 3000;
+const PORT = env.port;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
