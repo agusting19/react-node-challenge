@@ -4,9 +4,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute.tsx";
+import DashboardLayout from "./components/dashboard/DashboardLayout.tsx";
 import ErrorElement from "./components/ErrorElement.tsx";
 import "./index.css";
 import LoginPage from "./pages/auth/Login.tsx";
+import TripsPage from "./pages/dashboard/TripsPage.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +26,17 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+    errorElement: <ErrorElement />,
+  },
+  {
+    path: "/",
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <TripsPage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorElement />,
   },
 ]);
