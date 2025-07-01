@@ -1,4 +1,4 @@
-import { FuelType, type Trip, TripStatus } from "@/domain/entities/trip.js";
+import { FuelType, type Trip, TripStatus } from "@/domain/entities/trip";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface TripDocument extends Omit<Trip, "id">, Document {

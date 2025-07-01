@@ -1,4 +1,4 @@
-import { type User, UserRole } from "@/domain/entities/user.js";
+import { type User, UserRole } from "@/domain/entities/user";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface UserDocument extends Omit<User, "id">, Document {

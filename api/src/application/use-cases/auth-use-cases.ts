@@ -2,9 +2,9 @@ import type {
   AuthResponseDto,
   CreateUserDto,
   LoginDto,
-} from "@/application/dtos/auth-dto.js";
-import type { User } from "@/domain/entities/user.js";
-import type { UserRepository } from "@/domain/repositories/user-repository.js";
+} from "@/application/dtos/auth-dto";
+import type { User } from "@/domain/entities/user";
+import type { UserRepository } from "@/domain/repositories/user-repository";
 import { env } from "@/infrastructure/config/environment";
 import bcrypt from "bcryptjs";
 import jwt, { type JwtPayload as BaseJwtPayload } from "jsonwebtoken";

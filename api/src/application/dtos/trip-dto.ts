@@ -1,4 +1,4 @@
-import type { FuelType, TripStatus } from "@/domain/entities/trip.js";
+import type { FuelType, TripStatus } from "@/domain/entities/trip";
 
 export interface CreateTripDto {
   truck: string;

@@ -3,11 +3,11 @@ import type {
   TripFilterDto,
   TripResponseDto,
   UpdateTripDto,
-} from "@/application/dtos/trip-dto.js";
-import type { Trip } from "@/domain/entities/trip.js";
-import { TripStatus } from "@/domain/entities/trip.js";
-import type { TripRepository } from "@/domain/repositories/trip-repository.js";
-import { validateTrip } from "@/domain/value-objects/trip-validations.js";
+} from "@/application/dtos/trip-dto";
+import type { Trip } from "@/domain/entities/trip";
+import { TripStatus } from "@/domain/entities/trip";
+import type { TripRepository } from "@/domain/repositories/trip-repository";
+import { validateTrip } from "@/domain/value-objects/trip-validations";
 
 export const createTripUseCase = (tripRepository: TripRepository) => {
   return async (tripData: CreateTripDto): Promise<TripResponseDto> => {

@@ -1,4 +1,4 @@
-import type { Trip } from "@/domain/entities/trip.js";
+import type { Trip } from "@/domain/entities/trip";
 
 export interface TripRepository {
   findAll(): Promise<Trip[]>;
