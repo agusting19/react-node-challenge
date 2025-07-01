@@ -1,4 +1,5 @@
-import type { Trip } from "@/domain/entities/trip";
+import type { TripFilterDto } from "@/application/dtos/trip-dto.js";
+import type { Trip } from "@/domain/entities/trip.js";
 
 export interface TripRepository {
   findAll(): Promise<Trip[]>;
@@ -6,6 +7,9 @@ export interface TripRepository {
   findByStatus(status: string): Promise<Trip[]>;
   findByDriver(driver: string): Promise<Trip[]>;
   findByFuel(fuel: string): Promise<Trip[]>;
+  findAllPaginated(
+    filters: TripFilterDto
+  ): Promise<{ trips: Trip[]; total: number }>;
   create(trip: Omit<Trip, "id" | "createdAt" | "updatedAt">): Promise<Trip>;
   update(id: string, trip: Partial<Trip>): Promise<Trip | null>;
   delete(id: string): Promise<boolean>;

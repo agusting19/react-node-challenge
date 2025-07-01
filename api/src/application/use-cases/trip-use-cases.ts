@@ -1,5 +1,6 @@
 import type {
   CreateTripDto,
+  PaginatedTripsResponse,
   TripFilterDto,
   TripResponseDto,
   UpdateTripDto,
@@ -30,20 +31,24 @@ export const createTripUseCase = (tripRepository: TripRepository) => {
 };
 
 export const getAllTripsUseCase = (tripRepository: TripRepository) => {
-  return async (filters?: TripFilterDto): Promise<TripResponseDto[]> => {
-    let trips: Trip[];
+  return async (filters: TripFilterDto): Promise<PaginatedTripsResponse> => {
+    const { trips, total } = await tripRepository.findAllPaginated(filters);
 
-    if (filters?.status) {
-      trips = await tripRepository.findByStatus(filters.status);
-    } else if (filters?.driver) {
-      trips = await tripRepository.findByDriver(filters.driver);
-    } else if (filters?.fuel) {
-      trips = await tripRepository.findByFuel(filters.fuel);
-    } else {
-      trips = await tripRepository.findAll();
-    }
+    const page = filters.page || 1;
+    const limit = filters.limit || 10;
+    const totalPages = Math.ceil(total / limit);
 
-    return trips.map(mapTripToResponseDto);
+    return {
+      data: trips.map(mapTripToResponseDto),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   };
 };
 

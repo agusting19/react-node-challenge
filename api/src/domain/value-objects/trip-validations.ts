@@ -1,3 +1,4 @@
+import { FuelType, TripStatus } from "@/domain/entities/trip";
 import type { Trip } from "../entities/trip";
 
 export const MAX_LITERS = 30000;
@@ -22,6 +23,15 @@ export const validateDepartureDate = (date: Date): void => {
 export const validateTrip = (trip: Partial<Trip>): void => {
   if (trip.liters) validateLiters(trip.liters);
   if (trip.departureDate) validateDepartureDate(trip.departureDate);
+};
+
+// Validation helpers for enum values
+export const isValidTripStatus = (value: string): value is TripStatus => {
+  return Object.values(TripStatus).includes(value as TripStatus);
+};
+
+export const isValidFuelType = (value: string): value is FuelType => {
+  return Object.values(FuelType).includes(value as FuelType);
 };
 
 const getErrorMessage = (error: unknown): string => {

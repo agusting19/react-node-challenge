@@ -11,6 +11,10 @@ import {
   updateTripUseCase,
 } from "@/application/use-cases/trip-use-cases";
 import { tripRepositoryImpl } from "@/domain/repositories/trip-repository-impl";
+import {
+  isValidFuelType,
+  isValidTripStatus,
+} from "@/domain/value-objects/trip-validations";
 import type { Request, Response } from "express";
 
 export const createTrip = async (
@@ -39,7 +43,25 @@ export const getAllTrips = async (
   res: Response
 ): Promise<void> => {
   try {
-    const filters: TripFilterDto = req.query as any;
+    // Parse pagination params
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string;
+
+    // Validate enums
+    const statusParam = req.query.status as string;
+    const fuelParam = req.query.fuel as string;
+    const driverParam = req.query.driver as string;
+
+    const filters: TripFilterDto = {
+      page,
+      limit,
+      search,
+      status:
+        statusParam && isValidTripStatus(statusParam) ? statusParam : undefined,
+      driver: driverParam,
+      fuel: fuelParam && isValidFuelType(fuelParam) ? fuelParam : undefined,
+    };
 
     const getTrips = getAllTripsUseCase(tripRepositoryImpl);
     const result = await getTrips(filters);

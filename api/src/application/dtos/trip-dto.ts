@@ -22,6 +22,9 @@ export interface UpdateTripDto {
 }
 
 export interface TripFilterDto {
+  page?: number;
+  limit?: number;
+  search?: string;
   status?: TripStatus;
   driver?: string;
   fuel?: FuelType;
@@ -41,4 +44,18 @@ export interface TripResponseDto {
   status: TripStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface PaginatedTripsResponse {
+  data: TripResponseDto[];
+  pagination: PaginationMeta;
 }
