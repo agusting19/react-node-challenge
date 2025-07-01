@@ -57,7 +57,7 @@ const baseTripSchema = {
       const selectedDate = new Date(date);
       const now = new Date();
       return selectedDate > now;
-    }, "La fecha de salida debe ser posterior al momento actual"),
+    }, "La hora de salida debe ser posterior al momento actual"),
 };
 
 export const tripFormSchema = z.object(baseTripSchema);

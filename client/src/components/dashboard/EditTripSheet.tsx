@@ -34,12 +34,16 @@ import {
   type EditTripFormData,
   type TripFormData,
 } from "@/lib/trip-form-utils";
+import { cn } from "@/lib/utils";
 import type { Trip } from "@/types/trip";
 import { TripStatus } from "@/types/trip";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { format, startOfToday } from "date-fns";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 const TRIP_STATUS_OPTIONS = [
   { value: TripStatus.SCHEDULED, label: "Programado" },
@@ -259,16 +263,83 @@ export function EditTripSheet({
               control={form.control}
               name="departureDate"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fecha y Hora de Salida *</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    La fecha debe ser posterior al momento actual
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Fecha */}
+                  <FormField
+                    control={form.control}
+                    name="departureDate"
+                    render={({ field }) => {
+                      const date = field.value ? new Date(field.value) : null;
+
+                      return (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Fecha *</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                  )}
+                                >
+                                  {date
+                                    ? format(date, "PPP")
+                                    : "Selecciona una fecha"}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={date ?? undefined}
+                                onSelect={(selectedDate) => {
+                                  const currentTime = date ?? new Date();
+                                  const newDateTime = new Date(
+                                    selectedDate ?? currentTime
+                                  );
+                                  newDateTime.setHours(
+                                    currentTime.getHours(),
+                                    currentTime.getMinutes()
+                                  );
+                                  field.onChange(newDateTime.toISOString());
+                                }}
+                                disabled={(date) => date < startOfToday()}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                  <FormItem>
+                    <FormLabel>Hora *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={
+                          field.value
+                            ? format(new Date(field.value), "HH:mm")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const date = field.value
+                            ? new Date(field.value)
+                            : new Date();
+                          const [hours, minutes] = e.target.value
+                            .split(":")
+                            .map(Number);
+                          date.setHours(hours);
+                          date.setMinutes(minutes);
+                          field.onChange(date.toISOString());
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
               )}
             />
             <FormField
