@@ -1,43 +1,60 @@
-import { env } from "@/infrastructure/config/environment";
-import { connectDatabase } from "@/infrastructure/database/connection";
-import cors from "cors";
-import express from "express";
-import rateLimit from "express-rate-limit";
-import helmet from "helmet";
-import { apiRoutes } from "./presentation/routes/index.routes";
-
-const app = express();
-
-// Security Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // maximum 100 requests per window
-});
-app.use(limiter);
-
-// API Routes
-app.use("/api", apiRoutes);
-
-// Health check
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
-
-const PORT = env.port;
+import { env } from "@/infrastructure/config/environment.js";
+import {
+  connectDatabase,
+  disconnectDatabase,
+} from "@/infrastructure/database/connection.js";
+import app from "./app.js";
 
 const startServer = async () => {
   try {
+    // Connect to database first
     await connectDatabase();
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📋 API available at http://localhost:${PORT}/api`);
+    // Start HTTP server
+    const server = app.listen(env.port, () => {
+      console.log(`🚀 Trucking API running on port ${env.port}`);
+      console.log(`📊 Health check: http://localhost:${env.port}/health`);
+      console.log(`📋 API docs: http://localhost:${env.port}/api`);
+      console.log(`🌍 Environment: ${env.nodeEnv}`);
     });
+
+    // Graceful shutdown function
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`\n${signal} received - Starting graceful shutdown...`);
+
+      try {
+        // Close HTTP Server (stop accepting new connections)
+        server.close(async () => {
+          console.log("✅ HTTP server closed");
+
+          try {
+            // Disconnect database
+            await disconnectDatabase();
+            console.log("✅ Database disconnected");
+            console.log("✅ Graceful shutdown completed");
+            process.exit(0);
+          } catch (dbError) {
+            console.error("❌ Error disconnecting database:", dbError);
+            process.exit(1);
+          }
+        });
+
+        // Force close after 10 seconds
+        setTimeout(() => {
+          console.error("❌ Forced shutdown after timeout");
+          process.exit(1);
+        }, 10000);
+      } catch (error) {
+        console.error("❌ Error during graceful shutdown:", error);
+        process.exit(1);
+      }
+    };
+
+    // Handle shutdown signals
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+    return server;
   } catch (error) {
     console.error("❌ Failed to start server:", error);
     process.exit(1);
