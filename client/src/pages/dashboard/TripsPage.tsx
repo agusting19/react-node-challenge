@@ -1,3 +1,5 @@
+import { CreateTripSheet } from "@/components/dashboard/CreateTripSheet";
+import { EditTripSheet } from "@/components/dashboard/EditTripSheet";
 import TripsTab from "@/components/dashboard/TripsTab";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTripStore } from "@/stores/useTripStore";
 import { TripStatus } from "@/types/trip";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Truck } from "lucide-react";
 import { useState } from "react";
 
 const STATUS_OPTIONS = [
@@ -23,6 +26,15 @@ const STATUS_OPTIONS = [
 function TripsPage() {
   const [activeTab, setActiveTab] = useState("scheduled");
 
+  const {
+    isCreateSheetOpen,
+    openCreateSheet,
+    closeCreateSheet,
+    isEditSheetOpen,
+    tripToEdit,
+    closeEditSheet,
+  } = useTripStore();
+
   const getCurrentTabLabel = () => {
     return (
       STATUS_OPTIONS.find((tab) => tab.value === activeTab)?.label ||
@@ -33,6 +45,7 @@ function TripsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
+        <Truck className="h-6 w-6" />
         <h1 className="text-2xl font-bold">Gestión de Viajes</h1>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -61,7 +74,7 @@ function TripsPage() {
             </TabsList>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1" onClick={() => {}}>
+            <Button size="sm" className="h-8 gap-1" onClick={openCreateSheet}>
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Nuevo Viaje
@@ -85,6 +98,15 @@ function TripsPage() {
           <TripsTab />
         </TabsContent>
       </Tabs>
+      <CreateTripSheet
+        open={isCreateSheetOpen}
+        onOpenChange={(open) => (open ? openCreateSheet() : closeCreateSheet())}
+      />
+      <EditTripSheet
+        trip={tripToEdit}
+        open={isEditSheetOpen}
+        onOpenChange={(open) => (open ? null : closeEditSheet())}
+      />
     </div>
   );
 }
