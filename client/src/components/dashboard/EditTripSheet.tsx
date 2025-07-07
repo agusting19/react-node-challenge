@@ -70,7 +70,6 @@ export function EditTripSheet({
 
   useEffect(() => {
     if (trip && open) {
-      console.log("Resetting form with trip data:", trip);
       form.reset({
         truck: trip.truck,
         driver: trip.driver,

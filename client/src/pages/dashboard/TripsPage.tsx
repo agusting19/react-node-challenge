@@ -12,8 +12,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTripStore } from "@/stores/useTripStore";
 import { TripStatus } from "@/types/trip";
-import { PlusCircle, Truck } from "lucide-react";
+import { PlusCircle, Search, Truck, X } from "lucide-react";
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const STATUS_OPTIONS = [
   { value: "scheduled", label: "Programados" },
@@ -25,6 +26,10 @@ const STATUS_OPTIONS = [
 
 function TripsPage() {
   const [activeTab, setActiveTab] = useState("scheduled");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const searchTerm = searchParams.get("q") || "";
 
   const {
     isCreateSheetOpen,
@@ -35,6 +40,14 @@ function TripsPage() {
     closeEditSheet,
   } = useTripStore();
 
+  const clearSearch = () => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.delete("q");
+
+    const queryString = currentParams.toString();
+    navigate(`${location.pathname}${queryString ? `?${queryString}` : ""}`);
+  };
+
   const getCurrentTabLabel = () => {
     return (
       STATUS_OPTIONS.find((tab) => tab.value === activeTab)?.label ||
@@ -42,11 +55,43 @@ function TripsPage() {
     );
   };
 
+  const getStatusFromTab = (tabValue: string): TripStatus | undefined => {
+    const statusMap: Record<string, TripStatus> = {
+      scheduled: TripStatus.SCHEDULED,
+      "in-transit": TripStatus.IN_TRANSIT,
+      delivered: TripStatus.DELIVERED,
+      cancelled: TripStatus.CANCELLED,
+    };
+    return statusMap[tabValue];
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Truck className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">Gestión de Viajes</h1>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Truck className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">Gestión de Viajes</h1>
+          {searchTerm && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <Search className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Buscando:
+              </span>
+              <span className="text-sm font-semibold text-blue-900 dark:text-blue-100 bg-blue-100 dark:bg-blue-900/50 px-2 rounded">
+                "{searchTerm}"
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSearch}
+                className="h-5 w-5 p-0 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                title="Limpiar búsqueda"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between">
@@ -73,40 +118,34 @@ function TripsPage() {
               <TabsTrigger value="all">Todos</TabsTrigger>
             </TabsList>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="h-8 gap-1" onClick={openCreateSheet}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Nuevo Viaje
-              </span>
-            </Button>
-          </div>
+          <Button size="sm" className="h-8 gap-1" onClick={openCreateSheet}>
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Nuevo Viaje
+            </span>
+          </Button>
         </div>
-        <TabsContent value="scheduled">
-          <TripsTab status={TripStatus.SCHEDULED} />
-        </TabsContent>
-        <TabsContent value="in-transit">
-          <TripsTab status={TripStatus.IN_TRANSIT} />
-        </TabsContent>
-        <TabsContent value="delivered">
-          <TripsTab status={TripStatus.DELIVERED} />
-        </TabsContent>
-        <TabsContent value="cancelled">
-          <TripsTab status={TripStatus.CANCELLED} />
-        </TabsContent>
-        <TabsContent value="all">
-          <TripsTab />
-        </TabsContent>
+
+        {STATUS_OPTIONS.map((statusOption) => (
+          <TabsContent key={statusOption.value} value={statusOption.value}>
+            <TripsTab
+              status={getStatusFromTab(statusOption.value)}
+              searchTerm={searchTerm}
+            />
+          </TabsContent>
+        ))}
       </Tabs>
       <CreateTripSheet
         open={isCreateSheetOpen}
-        onOpenChange={(open) => (open ? openCreateSheet() : closeCreateSheet())}
+        onOpenChange={closeCreateSheet}
       />
-      <EditTripSheet
-        trip={tripToEdit}
-        open={isEditSheetOpen}
-        onOpenChange={(open) => (open ? null : closeEditSheet())}
-      />
+      {tripToEdit && (
+        <EditTripSheet
+          open={isEditSheetOpen}
+          onOpenChange={closeEditSheet}
+          trip={tripToEdit}
+        />
+      )}
     </div>
   );
 }

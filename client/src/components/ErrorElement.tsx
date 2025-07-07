@@ -35,7 +35,7 @@ const ErrorElement = () => {
         }
       } catch {
         errorMessage = "Something went wrong.";
-        console.log("Error parsing error object:", errorMessage);
+        console.error("Error parsing error object:", errorMessage);
       }
       // logErrorElementToAPI(errorMessage);
     }
