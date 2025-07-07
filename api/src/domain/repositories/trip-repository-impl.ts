@@ -1,11 +1,44 @@
 import type { TripFilterDto } from "@/application/dtos/trip-dto";
 import type { Trip } from "@/domain/entities/trip";
-import { TripStatus } from "@/domain/entities/trip";
+import { FuelType, TripStatus } from "@/domain/entities/trip";
 import type { TripRepository } from "@/domain/repositories/trip-repository";
 import {
   TripModel,
   type TripDocument,
 } from "@/infrastructure/database/schemas/trip-schema";
+
+// Tag mapping in Spanish at values ​​in English
+const SPANISH_FUEL_MAPPING: Record<string, FuelType[]> = {
+  diésel: [FuelType.DIESEL],
+  diesel: [FuelType.DIESEL],
+  nafta: [FuelType.SUPER_GASOLINE, FuelType.PREMIUM_GASOLINE],
+  super: [FuelType.SUPER_GASOLINE],
+  premium: [FuelType.PREMIUM_GASOLINE],
+  gnc: [FuelType.CNG],
+  cng: [FuelType.CNG],
+  gas: [FuelType.CNG],
+  gasoline: [FuelType.SUPER_GASOLINE, FuelType.PREMIUM_GASOLINE],
+  súper: [FuelType.SUPER_GASOLINE],
+  súpere: [FuelType.SUPER_GASOLINE],
+};
+
+// Function to obtain types of fuel based on search
+const getFuelTypesFromSearch = (searchTerm: string): FuelType[] => {
+  const normalizedSearch = searchTerm.toLowerCase().trim();
+  const matchingFuels: FuelType[] = [];
+
+  if (SPANISH_FUEL_MAPPING[normalizedSearch]) {
+    matchingFuels.push(...SPANISH_FUEL_MAPPING[normalizedSearch]);
+  }
+
+  Object.keys(SPANISH_FUEL_MAPPING).forEach((key) => {
+    if (key.includes(normalizedSearch) || normalizedSearch.includes(key)) {
+      matchingFuels.push(...SPANISH_FUEL_MAPPING[key]);
+    }
+  });
+
+  return [...new Set(matchingFuels)];
+};
 
 const mapToEntity = (doc: TripDocument): Trip => ({
   id: doc._id.toString(),
@@ -42,12 +75,19 @@ export const tripRepositoryImpl: TripRepository = {
     }
 
     if (filters.search) {
-      query.$or = [
+      const searchConditions: any[] = [
         { driver: { $regex: filters.search, $options: "i" } },
         { truck: { $regex: filters.search, $options: "i" } },
         { origin: { $regex: filters.search, $options: "i" } },
         { destination: { $regex: filters.search, $options: "i" } },
       ];
+
+      const fuelTypes = getFuelTypesFromSearch(filters.search);
+      if (fuelTypes.length > 0) {
+        searchConditions.push({ fuel: { $in: fuelTypes } });
+      }
+
+      query.$or = searchConditions;
     }
 
     if (filters.driver) {
