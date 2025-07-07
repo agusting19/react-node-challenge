@@ -16,7 +16,7 @@ router.use(authMiddleware);
 router.get("/", getAllTrips);
 router.get("/:id", getTripById);
 router.post("/", createTrip);
-router.patch("/:id", updateTrip);
+router.put("/:id", updateTrip);
 router.delete("/:id", deleteTrip);
 
 export { router as tripRoutes };

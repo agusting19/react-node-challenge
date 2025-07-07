@@ -36,8 +36,12 @@ export const isAuthenticated = (): boolean => {
 
 // Error handler
 const handleApiError = (error: AxiosError): Error => {
+  const backendError = (error.response?.data as any)?.error;
+  const backendMessage = (error.response?.data as any)?.message;
+
   const message =
-    (error.response?.data as any)?.message ||
+    backendError ||
+    backendMessage ||
     error.message ||
     "Ha ocurrido un error inesperado";
 
@@ -62,10 +66,13 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     // Auto logout en 401
     if (error.response?.status === 401) {
-      clearAuthToken();
+      const isLoginRequest = error.config?.url?.includes("/auth/login");
+      if (!isLoginRequest) {
+        clearAuthToken();
 
-      if (!window.location.pathname.includes("/login")) {
-        window.location.href = "/login";
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/login";
+        }
       }
     }
 
@@ -91,12 +98,12 @@ export const post = async <T>(
   return response.data;
 };
 
-export const patch = async <T>(
+export const put = async <T>(
   url: string,
   data?: any,
   config?: AxiosRequestConfig
 ): Promise<T> => {
-  const response = await apiClient.patch<T>(url, data, config);
+  const response = await apiClient.put<T>(url, data, config);
   return response.data;
 };
 

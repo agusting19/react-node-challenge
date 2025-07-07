@@ -47,14 +47,25 @@ export const useAuth = () => {
   ): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await loginMutation.mutateAsync({ email, password });
+
+      if (!response.success) {
+        return {
+          success: false,
+          message: "Error",
+        };
+      }
+
       return {
         success: response.success,
         message: "Login exitoso",
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error en el login";
+
       return {
         success: false,
-        message: error instanceof Error ? error.message : "Error en el login",
+        message: errorMessage,
       };
     }
   };

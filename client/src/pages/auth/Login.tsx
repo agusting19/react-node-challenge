@@ -37,21 +37,13 @@ const LoginPage = () => {
     },
   });
 
-  console.log("LoginPage - isAuthenticated:", isAuthenticated);
   if (isAuthenticated) {
     const from = location.state?.from?.pathname || "/";
     return <Navigate to={from} replace />;
   }
 
   const onSubmit = async (data: LoginFormData) => {
-    const result = await login(data.email, data.password);
-
-    if (!result.success) {
-      form.setError("root", {
-        type: "manual",
-        message: result.message,
-      });
-    }
+    await login(data.email, data.password);
   };
 
   return (
@@ -129,11 +121,6 @@ const LoginPage = () => {
                     </FormItem>
                   )}
                 />
-                {form.formState.errors.root && (
-                  <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                    {form.formState.errors.root.message}
-                  </div>
-                )}
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? (
                     <>

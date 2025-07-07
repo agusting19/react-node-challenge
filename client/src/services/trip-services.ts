@@ -1,4 +1,4 @@
-import { del, get, patch, post } from "@/lib/api-client";
+import { del, get, post, put } from "@/lib/api-client";
 import type { PaginatedResponse, PaginationParams } from "@/types/api";
 import type { CreateTripRequest, Trip, UpdateTripRequest } from "@/types/trip";
 
@@ -40,7 +40,7 @@ export const updateTrip = async (
   id: string,
   updateData: UpdateTripRequest
 ): Promise<Trip> => {
-  return await patch<Trip>(`/api/trips/${id}`, updateData);
+  return await put<Trip>(`/api/trips/${id}`, updateData);
 };
 
 export const deleteTrip = async (id: string): Promise<void> => {
