@@ -4,11 +4,15 @@ import {
   disconnectDatabase,
 } from "@/infrastructure/database/connection.js";
 import app from "./app.js";
+import seedUsers from "./infrastructure/database/seeders/seed.js";
 
 const startServer = async () => {
   try {
     // Connect to database first
     await connectDatabase();
+
+    // Run seed script
+    await seedUsers();
 
     // Start HTTP server
     const server = app.listen(env.port, () => {
@@ -16,6 +20,7 @@ const startServer = async () => {
       console.log(`📊 Health check: http://localhost:${env.port}/health`);
       console.log(`📋 API docs: http://localhost:${env.port}/api`);
       console.log(`🌍 Environment: ${env.nodeEnv}`);
+      console.log(`👤 Login with: admin@trucking.com / admin123`);
     });
 
     // Graceful shutdown function
